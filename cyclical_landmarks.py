@@ -129,8 +129,11 @@ y_range = np.array([0, 600])
 
 # Number of partciles
 N = 400
+cp = 0
 
-landmarks = np.array([[144, 73], [410, 13], [336, 175], [718, 159], [178, 484], [665, 464]])
+base_landmarks = np.array([[144, 73], [410, 13], [336, 175], [718, 159], [178, 484], [665, 464]])
+landmarks = base_landmarks
+
 NL = len(landmarks)
 particles = create_uniform_particles(x_range, y_range, N)
 
@@ -150,7 +153,13 @@ previous_y = -1
 DELAY_MSEC = 50
 
 while (1):
+    if cp == 10:
+        cp = 0
+    else:
+        cp += 1
 
+    # landmarks cyclical change
+    landmarks = np.array([[x[0] + cp, x[1]] for x in base_landmarks])
     cv2.imshow(WINDOW_NAME, img)
     img = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
     drawLines(img, trajectory, 0, 255, 0)

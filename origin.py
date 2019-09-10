@@ -34,6 +34,7 @@ def mouseCallback(event, x, y, flags, null):
     trajectory = np.vstack((trajectory, np.array([x, y])))
     # noise=sensorSigma * np.random.randn(1,2) + sensorMu
 
+    # 计算方向与距离
     if previous_x > 0:
         heading = np.arctan2(np.array([y - previous_y]), np.array([previous_x - x]))
 
@@ -42,11 +43,14 @@ def mouseCallback(event, x, y, flags, null):
         else:
             heading = -(np.pi + heading)
 
+        # 求二范数即求前后两次位置的距离
         distance = np.linalg.norm(np.array([[previous_x, previous_y]]) - np.array([[x, y]]), axis=1)
 
         std = np.array([2, 4])
         u = np.array([heading, distance])
         predict(particles, u, std, dt=1.)
+
+        # zs 为landmarks与robot的距离加上服从正态分布的误差
         zs = (np.linalg.norm(landmarks - center, axis=1) + (np.random.randn(NL) * sensor_std_err))
         update(particles, weights, z=zs, R=50, landmarks=landmarks)
 
@@ -76,19 +80,24 @@ def create_uniform_particles(x_range, y_range, N):
 
 def predict(particles, u, std, dt=1.):
     N = len(particles)
+    # 生成距离符合正态分布, 其中u[1]为前后两次位置的距离
     dist = (u[1] * dt) + (np.random.randn(N) * std[1])
+    # 每个particle的x加上位移方向余弦乘正态分布的距离
     particles[:, 0] += np.cos(u[0]) * dist
+    # 每个particle的y加上位移方向正弦乘正态分布的距离
     particles[:, 1] += np.sin(u[0]) * dist
 
 
 def update(particles, weights, z, R, landmarks):
     weights.fill(1.)
     for i, landmark in enumerate(landmarks):
+        # 计算landmarks与particles的欧氏距离
         distance = np.power((particles[:, 0] - landmark[0]) ** 2 + (particles[:, 1] - landmark[1]) ** 2, 0.5)
+        # 每个权重为服从均值为距离，方差为50的正态分布，取值为landmark与robot的距离
         weights *= scipy.stats.norm(distance, R).pdf(z[i])
 
     weights += 1.e-300  # avoid round-off to zero
-    weights /= sum(weights)
+    weights /= sum(weights)  # 标准化
 
 
 def neff(weights):

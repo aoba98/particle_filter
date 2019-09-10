@@ -1,6 +1,3 @@
-"""
-思路：给与每个landmarks位移修正，使其计算距离时按未发生位移时计算
-"""
 import numpy as np
 import scipy
 from numpy.random import uniform
@@ -27,12 +24,14 @@ def drawCross(img, center, r, g, b):
 
 
 def mouseCallback(event, x, y, flags, null):
+    global mouse_moved
     global center
     global trajectory
     global previous_x
     global previous_y
     global zs
 
+    mouse_moved = 1
     center = np.array([[x, y]])
     trajectory = np.vstack((trajectory, np.array([x, y])))
     # noise=sensorSigma * np.random.randn(1,2) + sensorMu
@@ -127,6 +126,37 @@ def resample_from_index(particles, weights, indexes):
     weights /= np.sum(weights)
 
 
+def mouse_stands(x, y):
+    global center
+    global trajectory
+    global previous_x
+    global previous_y
+    global zs
+
+    center = np.array([[x, y]])
+    trajectory = np.vstack((trajectory, np.array([x, y])))
+    # noise=sensorSigma * np.random.randn(1,2) + sensorMu
+
+    if previous_x > 0:
+        heading = np.arctan2(np.array([y - previous_y]), np.array([previous_x - x]))
+
+        if heading > 0:
+            heading = -(heading - np.pi)
+        else:
+            heading = -(np.pi + heading)
+
+        distance = np.linalg.norm(np.array([[previous_x, previous_y]]) - np.array([[x, y]]), axis=1)
+
+        std = np.array([2, 4])
+        u = np.array([heading, distance])
+        predict(particles, u, std, dt=1.)
+        zs = (np.linalg.norm(landmarks - center, axis=1) + (np.random.randn(NL) * sensor_std_err))
+        update(particles, weights, z=zs, R=50, landmarks=landmarks)
+
+        indexes = systematic_resample(weights)
+        resample_from_index(particles, weights, indexes)
+
+
 x_range = np.array([0, 800])
 y_range = np.array([0, 600])
 
@@ -156,13 +186,18 @@ previous_y = -1
 DELAY_MSEC = 50
 
 while (1):
-    if cp == 10:
+    if cp == 800:
         cp = 0
     else:
         cp += 1
 
+    mouse_moved = 0
+
+    if not mouse_moved and previous_x >= 0:
+        mouse_stands(previous_x, previous_y)
+
     # landmarks cyclical change
-    landmarks = np.array([[x[0] + cp, x[1]] for x in base_landmarks])
+    landmarks = np.array([[(x[0] + cp) % 800, x[1]] for x in base_landmarks])
     cv2.imshow(WINDOW_NAME, img)
     img = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
     drawLines(img, trajectory, 0, 255, 0)

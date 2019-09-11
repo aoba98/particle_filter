@@ -8,6 +8,8 @@
 
 ![1.png](https://i.loli.net/2019/09/11/ugwIG78MzkL6hNf.png)
 
+经过测试，在原版程序中，在固定y坐标的情况下水平移动鼠标也会表现出这样的情况。
+
 ## 使用泊松分布计算weights
 对应文件：weights_Poisson.py
 

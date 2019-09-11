@@ -192,9 +192,12 @@ while (1):
     cv2.putText(img, "Landmarks", (30, 20), 1, 1.0, (255, 0, 0))
     cv2.putText(img, "Particles", (30, 40), 1, 1.0, (255, 255, 255))
     cv2.putText(img, "Robot Trajectory(Ground truth)", (30, 60), 1, 1.0, (0, 255, 0))
-    cv2.putText(img, "Actual Position: ({x},{y})".format(x=center[0][0], y=center[0][1]), (30, 80), 1, 1.0, (0, 255, 255))
+    cv2.putText(img, "Actual Position: ({x},{y})".format(x=center[0][0], y=center[0][1]), (5, 550), 1, 1.0, (0, 255, 255))
     a, _ = estimate(particles, weights)
-    cv2.putText(img, "PF: ({x:.2f},{y:.2f})".format(x=PF_pos[0], y=PF_pos[1]), (30, 100), 1, 1.0,
+    cv2.putText(img, "PF: ({x:.2f},{y:.2f})".format(x=a[0], y=a[1]), (5, 570), 1, 1.0,
+                (0, 255, 255))
+    er = ((a[0] - center[0][0]) ** 2 + (a[1] - center[0][1]) ** 2) ** 0.5
+    cv2.putText(img, "Error: {er:.4f}".format(er=er), (5, 590), 1, 1.0,
                 (0, 255, 255))
     drawLines(img, np.array([[10, 55], [25, 55]]), 0, 255, 0)
 

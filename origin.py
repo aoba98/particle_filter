@@ -1,3 +1,6 @@
+"""
+作者原始文件，添加注释
+"""
 import numpy as np
 import scipy
 from numpy.random import uniform
@@ -50,7 +53,7 @@ def mouseCallback(event, x, y, flags, null):
         u = np.array([heading, distance])
         predict(particles, u, std, dt=1.)
 
-        # zs 为landmarks与robot的距离加上服从正态分布的误差
+        # zs 为landmarks与robot的距离加上误差
         zs = (np.linalg.norm(landmarks - center, axis=1) + (np.random.randn(NL) * sensor_std_err))
         update(particles, weights, z=zs, R=50, landmarks=landmarks)
 

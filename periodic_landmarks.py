@@ -1,3 +1,7 @@
+"""
+改进1：使landmarks周期性移动
+思路：每次循环使landmarks向右移动1px，以窗口宽度800为周期
+"""
 import numpy as np
 import scipy
 from numpy.random import uniform
@@ -196,7 +200,7 @@ while (1):
     if not mouse_moved and previous_x >= 0:
         mouse_stands(previous_x, previous_y)
 
-    # landmarks cyclical change
+    # 使landmarks周期变化
     landmarks = np.array([[(x[0] + cp) % 800, x[1]] for x in base_landmarks])
     cv2.imshow(WINDOW_NAME, img)
     img = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
